@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Question Generator </title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎯 Interview Question Generator</h1>
+            
+            <!-- Navigation -->
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-page="configuration">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Configuration</span>
+                </button>
+                <button class="nav-tab" data-page="questions" id="questionsTab" disabled>
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-text">Questions</span>
+                    <span class="nav-badge" id="questionsBadge">0</span>
+                </button>
+                <button class="nav-tab" data-page="preview" id="previewTab" disabled>
+                    <span class="nav-icon">👁️</span>
+                    <span class="nav-text">Preview</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Page: Configuration -->
+        <div class="page active" id="page-configuration">
+            <div class="page-grid">
+                <div class="card">
+                    <h2 class="card-title">Basic Settings</h2>
+
+                    <!-- Target Roles -->
+                    <div class="form-group">
+                        <label class="form-label">Target Roles *</label>
+                        <div class="multi-select-container">
+                            <div class="selected-chips" id="selectedRoles"></div>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                id="roleInput" 
+                                placeholder="Type or select roles..."
+                            >
+                            <div class="dropdown-options" id="roleOptions"></div>
+                        </div>
+                    </div>
+
+                    <!-- Topics (Optional) -->
+                    <div class="form-group">
+                        <label class="form-label">Topics (Optional)</label>
+                        <div class="multi-select-container">
+                            <div class="selected-chips" id="selectedTopics"></div>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                id="topicInput" 
+                                placeholder="Type or select topics..."
+                            >
+                            <div class="dropdown-options" id="topicOptions"></div>
+                        </div>
+                    </div>
+
+                    <!-- Question Type -->
+                    <div class="form-group">
+                        <label class="form-label">Question Type</label>
+                        <select class="form-select" id="questionType">
+                            <option value="mixed">Mixed (Coding + Theory)</option>
+                            <option value="coding">Coding Only</option>
+                            <option value="theory">Theory Only</option>
+                        </select>
+                    </div>
+
+                    <!-- Number of Questions -->
+                    <div class="form-group">
+                        <label class="form-label">Number of Questions</label>
+                        <input 
+                            type="number" 
+                            class="form-input" 
+                            id="numQuestions" 
+                            min="1" 
+                            max="50" 
+                            value="5"
+                        >
+                    </div>
+
+                    <!-- Programming Language -->
+                    <div class="form-group">
+                        <label class="form-label">Programming Language</label>
+                        <select class="form-select" id="language">
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="cpp">C++</option>
+                            <option value="csharp">C#</option>
+                            <option value="go">Go</option>
+                            <option value="rust">Rust</option>
+                            <option value="pseudocode">Pseudocode</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">Difficulty Distribution</h2>
+
+                    <!-- Difficulty Distribution -->
+                    <div class="form-group">
+                        <label class="form-label">Distribution (must sum to 100%)</label>
+                        <div class="difficulty-grid">
+                            <div class="difficulty-input-group">
+                                <label>Easy</label>
+                                <div class="difficulty-input-wrapper">
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        id="diffEasy" 
+                                        min="0" 
+                                        max="100" 
+                                        value="40"
+                                    >
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="difficulty-input-group">
+                                <label>Medium</label>
+                                <div class="difficulty-input-wrapper">
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        id="diffMedium" 
+                                        min="0" 
+                                        max="100" 
+                                        value="40"
+                                    >
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="difficulty-input-group">
+                                <label>Hard</label>
+                                <div class="difficulty-input-wrapper">
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        id="diffHard" 
+                                        min="0" 
+                                        max="100" 
+                                        value="20"
+                                    >
+                                    <span>%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="difficulty-status valid" id="difficultyStatus">
+                            ✓ Valid (100%)
+                        </div>
+                    </div>
+
+                    <!-- Error Display -->
+                    <div id="errorAlert" style="display: none;"></div>
+
+                    <!-- Generate Button -->
+                    <button class="btn btn-primary btn-full" id="generateBtn">
+                        <span id="btnText">Generate Questions</span>
+                        <span class="spinner" id="btnSpinner" style="display: none;"></span>
+                    </button>
+
+                    <!-- Progress Info -->
+                    <div class="info-box" style="margin-top: 1rem;">
+                        <div class="info-icon">💡</div>
+                        <div class="info-content">
+                            <strong>Tip:</strong> Select at least one role to start generating questions. Topics are optional and help focus the questions.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Questions List -->
+        <div class="page" id="page-questions">
+            <div class="card">
+                <div class="page-header">
+                    <div>
+                        <h2 class="card-title">Generated Questions</h2>
+                        <p class="page-subtitle">
+                            <span id="questionCount">0</span> questions generated
+                        </p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="exportBtn">
+                            📥 Export JSON
+                        </button>
+                        <label class="btn btn-success" style="margin: 0;">
+                            📤 Import JSON
+                            <input type="file" id="importFile" accept=".json" style="display: none;">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <span class="filter-label">🔍 Filter:</span>
+                        <select class="form-select" id="filterDifficulty">
+                            <option value="all">All Difficulties</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select class="form-select" id="filterType">
+                            <option value="all">All Types</option>
+                            <option value="coding">Coding</option>
+                            <option value="system_design">System Design</option>
+                            <option value="cloud_scenario">Cloud Scenario</option>
+                            <option value="ml_case_study">ML Case Study</option>
+                            <option value="sql">SQL</option>
+                            <option value="behavioral">Behavioral</option>
+                            <option value="mcq">MCQ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Questions Grid -->
+                <div class="questions-grid">
+                    <div class="question-list" id="questionList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Question Preview -->
+        <div class="page" id="page-preview">
+            <div class="card">
+                <div class="page-header">
+                    <button class="btn btn-secondary" id="backToListBtn">
+                        ← Back to List
+                    </button>
+                    <div class="preview-navigation">
+                        <button class="btn btn-secondary" id="prevQuestionBtn">← Previous</button>
+                        <span class="preview-counter" id="previewCounter">1 / 1</span>
+                        <button class="btn btn-secondary" id="nextQuestionBtn">Next →</button>
+                    </div>
+                </div>
+
+                <div class="question-detail" id="questionDetail">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div class="empty-state-title">No question selected</div>
+                        <div class="empty-state-description">Select a question from the list</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/sql/sql.min.js"></script>
+    <script src="config.js"></script>
+    <script src="ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
